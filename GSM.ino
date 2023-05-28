@@ -10,7 +10,7 @@
                   |___/                            \_\/_/ 
  ****************************************************************************/
 void beginGSM(){
-  String resp = "";           //  Respuesta recibida del GPRS
+  String resp = "";           //  Respuesta recibida del A7670E
   bool arranco = false;       //  Cierto una vez terminado el arranque
   bool enFrio = false;        //  A7076E cierto si recién enciende o falso si ya estaba encendido
   bool simNotFound = false;   //  No se encuentra tarjeta SIM
@@ -72,22 +72,26 @@ void beginGSM(){
   if(!arranco){       //  El módulo no respondió en el tiempo dado
     Serial.println("\n");
     Serial.println("     **** ERROR FATAL ****");
-    Serial.println("No se encontró el Módulo GSM-GPRS");
+    Serial.println("No se encontró el Módulo A7670E");
     Serial.println("Ejecución terminada");
-    for(;;);
+    for(;;){
+      errorLED(1);
+    }
   }
   if(simNotFound){
     Serial.println("\n");
     Serial.println("     **** ERROR FATAL ****");
     Serial.println("No se encontró la tarjeta SIM");
     Serial.println("Ejecución terminada");
-    for(;;);
+    for(;;){
+      errorLED(2);
+    }
   }
   //Serial.println("\nMódulo A7670E encontrado...");
   Serial.println("\nComunicación establecida con el módulo A7670E");
   Serial.println("");
   //Serial.println("Esperando señal...");
-  Serial.println("Esperando señal de la red de telefonía móvil...");
+  Serial.println("2 min. de espera por la señal de la red de telefonía móvil...");
 
   //  El módulo ya esta encendido. Ahora se espera hasta que se conecte con
   //  la red y este en línea, para poder tener comunicaciones.
@@ -111,10 +115,15 @@ void beginGSM(){
     Serial.println("\n");
     Serial.println("     **** ERROR FATAL ****");
     Serial.println("No hay conexion con la red de telefonía");
-    Serial.println("Se reiniciará en 10 segundos");
-    miDelay(10);
-    ESP.restart();
-    for(;;);
+    Serial.println("Se reiniciará en 20 segundos");
+
+    //  Apagado del módulo A7670E y cuenta atras de 20 seg
+    digitalWrite(MOSFET, LOW);
+    lapso = millis() + 20000;
+    while(millis() < lapso){
+      errorLED(3);
+    }
+    ESP.restart();      //  Reinicio del MCU
   }
 
   Serial.println("");

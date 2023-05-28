@@ -123,3 +123,25 @@ void setRTC(String &lectura){
   rtc.setTime(seg, minu, hora, dia, mes, ano);
   //rtc.offset = 0; // change offset value
 }
+
+/*********************************************************************************
+                                 _     _____ ____   ____  
+         ___ _ __ _ __ ___  _ __| |   | ____|  _ \ / /\ \ 
+        / _ \ '__| '__/ _ \| '__| |   |  _| | | | | |  | |
+       |  __/ |  | | | (_) | |  | |___| |___| |_| | |  | |
+        \___|_|  |_|  \___/|_|  |_____|_____|____/| |  | |
+                                                   \_\/_/ 
+*********************************************************************************/
+//  Enciende el LED sobre el MCU un numero de veces para señalizar algun error
+void errorLED(uint8_t veces){
+  uint32_t tiemON = 300;
+  uint32_t tiemOFF = 150;
+  uint32_t tiemRepite = 800;
+  for(int i = 0; i < veces; i++){
+    digitalWrite(LED_BUILTIN, HIGH);      //  Enciende el LED
+    delay(tiemON);
+    digitalWrite(LED_BUILTIN, LOW);       //  Apaga el LED
+    delay(tiemOFF);
+  }
+  delay(tiemRepite);
+}
