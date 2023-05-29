@@ -20,6 +20,7 @@ void beginGSM(){
   //  Se asume que la velocidad por defecto es 115200 bps
   //  Cuando el módulo A7670E termina el arranque lo notifica con el message
   //  "PB DONE" así que: se espera eso
+  Serial.println("Módulo A7670E activado");
   digitalWrite(MOSFET, HIGH);
   //Serial.println("\nComunicación con el módulo A7670E...");
   //Serial.println("\nAbriendo un canal con el módulo A7670E...");
@@ -117,7 +118,7 @@ void beginGSM(){
     Serial.println("No hay conexion con la red de telefonía");
     Serial.println("Se reiniciará en 20 segundos");
 
-    //  Apagado del módulo A7670E y cuenta atras de 20 seg
+    //  Apagado del módulo A7670E y cuenta atrás de 20 seg
     digitalWrite(MOSFET, LOW);
     lapso = millis() + 20000;
     while(millis() < lapso){

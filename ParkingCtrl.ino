@@ -33,15 +33,17 @@ Components	:
 
 #define LED_BUILTIN     2       //  LED sobre el MCU
 #define MOSFET          4       //  Pin que controla la alimentación del A7670E
-#define RXD1            18      //  RX del Serial1 usado para el TFMiny
-#define TXD1            19      //  TX del Serial1 usado para el TFMiny
+#define RXD1            18      //  RX del Serial1 usado para el TFMini
+#define TXD1            19      //  TX del Serial1 usado para el TFMini
 #define RXD2            16      //  RX del Serial2 usado para el A7670E
 #define TXD2            17      //  TX del Serial2 usado para el A7670E
 
 #define SHOW_TIMES      false   //  Muestra el tiempo de respuesta comandos AT
 #define SHOW            true    //  Salidas cuando inicializa el A7670E
 
+#define DIST_MIN        150     //  Distancia mínima hasta el coche
 #define INTERVALO       60000   //  Intervalo para verificar la plaza 1 min.
+
 //#define NUMERO   "+34647475070" //  Número de contacto Móvil 1
 #define NUMERO   "+34603372696" //  Número de contacto Movil 2
 
@@ -55,46 +57,43 @@ Components	:
 *****************************************************************************/
 //  Main thread Variables
 
-ESP32Time rtc(0);           //  Offset in seconds GMT
+ESP32Time rtc(0);               //  Offset in seconds GMT
 
-long const bps = 115200;
 
-bool plazaOcupada = false;  //  Estado actual de la plaza
-bool estadoAnte = false;    //  Estado de lectura anterior
-bool arranca = true;        //  Solo cuando arranca en frio
+//  Variables operativas
+long const bpsC = 115200;       //  Velocidad de conexión con la consola
+long const bpsG = 115200;       //  Velocidad de conexión con el A7670E
+long const bpsL = 115200;       //  Velocidad de conexión con el LÁSER
+bool plazaOcupada = false;      //  Estado actual de la plaza
+bool estadoAnte = true;         //  Estado de lectura anterior
+bool arranca = true;            //  Solo cuando arranca en frio
 
-String ristra = "";         //  GSM received data
-String hld = "";            //  Holds SMS received
-String sender = "";         //  Phone number that send the SMS
-String dateTime = "";       //  Received SMS time and date
-String cmd = "";            //  SMS text received
-String SMS ="";             //  Output SMS text
-String smsError = "";       //  Error messages text
-String lectura = "";        //  Expected answer from GSM module
-uint32_t lapso = 0;         //  Contador de tiempo rutina loop()
-
-String operador ="";        //  Nombre del operador de telefonía
-String tipoRed = "";        //  Tipo de red de conexión ejem.:2G, 3G, 4G, etc
-int tempInterna = 0;        //  Temperatura interna del Modem GSM
-
-int flagSMS = 0;            //  SMS received flag
-int pos;                    //  SMS begin position 
+//  Variables módulo A7670E
+String ristra = "";             //  GSM received data
+String SMS ="";                 //  Output SMS text
+String lectura = "";            //  Expected answer from GSM module
+uint32_t lapso = 0;             //  Contador de tiempo rutina loop()
+String operador ="";            //  Nombre del operador de telefonía
+String tipoRed = "";            //  Tipo de red de conexión ejem.:2G, 3G, 4G, etc
+int flagSMS = 0;                //  SMS received flag
 
 //  TFMini LIDAR Variables
-unsigned char inLidar[9];   //  Data recibida del TFMini
-unsigned char checkSum;     //  Suma de comprobación data recibida
-int apuntaByte = 0x01;      //  Puntero a un byte data recibida (inLidar[])
-int dist;                   //  Distancia medida hasta un obstáculo en la plaza
-int intensidad;             //  Intensidad de la señal del TFMini
-float temperatura;
-
-//************************************************
-//  Para probar por falta del TFMini
-//************************************************
-bool complete = true;   //  Becomes true when enter is press 
-String strVar = "";     //  String to keep the text entered
-
-
+int medida;                     //  La distancia medida por el TFMini Plus
+int intensidad;                 //  Intensidad de la señal del TFMini Plus
+float temperatura;              //  Temperatura del chip en el TFMini Plus
+uint8_t chkSum;                 //  Suma de verificación
+uint8_t cabecera1;              //  Encabezado de la data
+uint8_t cabecera2;              //  Encabezado de la data
+uint8_t lsbDist;                //  LSB de la distancia
+uint8_t msbDist;                //  MSB de la distancia
+uint8_t lsbInte;                //  LSB de la intensidad
+uint8_t msbInte;                //  MSB de la intensidad
+uint8_t lsbTemp;                //  LSB de la temperatura
+uint8_t msbTemp;                //  MSB de la temperatura
+uint8_t npi1;                   //  Ni la menor idea
+uint8_t verifica;               //  Suma de verificación enviada por el TFMini
+unsigned int charCabeza = 'Y';  //  Carácter usado para comienzo de datos
+int byteNum = 1;                //  Lleva la cuenta del numero del byte
 
 /****************************************************************************
 								 _                ____
@@ -114,20 +113,26 @@ void setup() {
   pinMode(MOSFET, OUTPUT);
   digitalWrite(MOSFET, LOW);
 
-  //  Abrir puerto Serial1 del ESP32 para comunicar con TFMiny
-  Serial1.begin(115200, SERIAL_8N1, RXD1, TXD1);
-
-  //  Abrir puerto Serial2 del ESP32 para comunicar con A7076E
-  Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
-
   //  Abrir puerto Serial del ESP32 para mensajes a la consola
-  Serial.begin(bps);
+  Serial.begin(bpsC);
   while (!Serial) {
     // wait for serial port. Needed for boards with native USB port
   }
   //  Needed to avoid double run on the terminal on UNO
   //	https://forum.arduino.cc/t/double-output-on-setup-observations/700756/5
   delay(200);
+
+  //  Abrir puerto Serial1 del ESP32 para comunicar con TFMini
+  Serial1.begin(bpsL, SERIAL_8N1, RXD1, TXD1);
+  while (!Serial1) {
+    // wait for serial port. Needed for boards with native USB port
+  }
+
+  //  Abrir puerto Serial2 del ESP32 para comunicar con A7076E
+  Serial2.begin(bpsG, SERIAL_8N1, RXD2, TXD2);
+  while (!Serial2) {
+    // wait for serial port. Needed for boards with native USB port
+  }
 
 
   //  Sketch ID on the terminal
@@ -147,7 +152,7 @@ void setup() {
   Serial.println("******************** INICIALIZADO ********************");
 
   //  Desactivar el módulo A7670E hasta que sea necesario
-  Serial.println("Desactivando módulo A7670E");
+  Serial.println("Módulo A7670E desactivado");
   digitalWrite(MOSFET, LOW);
   miDelay(1);
 
@@ -169,55 +174,34 @@ void loop() {
 
   //  Cada INTERVALO milisegundos se verifica si hay coche ocupando la plaza
   if( millis() > (lapso + INTERVALO) || lapso == 0){
-    Serial.println("Chequeando plaza de parking");
+    Serial.print("Verificando: ");
     lapso = millis();         //  Comienza el conteo de tiempo
   	getLidarData();           //  Se mide la distancia del obstáculo en la plaza
 
-    //***********************************
-    //  Para probar por falta del TFMini
-    //***********************************
-    /*
-    if (complete) {
-      //  Solo se aceptan numero de 0 al 10
-      String prtStrVar = strVar;
-      prtStrVar.trim();
-
-      //  Valida los valores
-      //CSpell: ignore obstaculo
-      int ditObstaculo = prtStrVar.toInt();
-      if(ditObstaculo >= 0 && ditObstaculo <= 1000) dist = ditObstaculo;
-
-      //  Inicializar variables para proxima la vez
-      strVar = "";
-      complete = false;
-    }
-    //***********************************
-    //  Final de para probar
-    //***********************************
-    */
-    if (dist >= 150) {
+    if (medida >= DIST_MIN) {
       plazaOcupada = false; 
     } else {
       plazaOcupada = true; 
     }
+
+    if (arranca) {
+      arranca = false;
+      Serial.print("La plaza está ");
+      Serial.println(plazaOcupada ? "OCUPADA" : "LIBRE");
+      estadoAnte = !plazaOcupada;
+    }
+
     if (plazaOcupada == estadoAnte) {
       Serial.print("La plaza sigue ");
-      Serial.println(plazaOcupada ? "OCUPADA\n" : "LIBRE\n");
+      Serial.println(plazaOcupada ? "OCUPADA" : "LIBRE");
     } else {
-      if (arranca) {
-        arranca = false;
-        Serial.print("La plaza está ");
-        Serial.println(plazaOcupada ? "OCUPADA\n" : "LIBRE\n");
-      } else {
-        Serial.print("La plaza ahora ");
-        Serial.println(plazaOcupada ? "se OCUPÓ\n" : "esta LIBRE\n");
-      }
+      Serial.print("La plaza ahora ");
+      Serial.println(plazaOcupada ? "se OCUPÓ" : "esta LIBRE");
 
       //  El Modem GSM puede tardar mas de 25 segundos en arrancar
       beginGSM();               //  Enciende el módulo A7670E y espera por el
       initGSM();                //  Configuración inicial del módulo
       
-
       //  Se ensambla el mensaje saliente
       SMS = "Plaza ";
       SMS += plazaOcupada ? "OCUPADA\n" : "LIBRE\n";
@@ -229,33 +213,11 @@ void loop() {
       //miDelay(3);
 
       //  Desactivar el módulo A7670E hasta que sea necesario
-      Serial.println("Desactivando módulo A7670E");
+      Serial.println("Módulo A7670E desactivado");
       digitalWrite(MOSFET, LOW);
 
-      estadoAnte = plazaOcupada;
     }
-  }
-}
 
-/****************************************************************************
-                      _       _ _____                 _    ____
-        ___  ___ _ __(_) __ _| | ____|_   _____ _ __ | |_ / /\ \
-       / __|/ _ \ '__| |/ _` | |  _| \ \ / / _ \ '_ \| __| |  | |
-       \__ \  __/ |  | | (_| | | |___ \ V /  __/ | | | |_| |  | |
-       |___/\___|_|  |_|\__,_|_|_____| \_/ \___|_| |_|\__| |  | |
-                                                          \_\/_/
- ****************************************************************************/
-//  Para probar por falta del TFMini
-void serialEvent() {
-  while (Serial.available()) {
-    char charIn = Serial.read();        //  Lee un carácter del buffer
-    strVar += charIn;                   //  Añade el carácter a la var receptora
-    if (charIn == 10 || charIn == 13) { //  Cualquier tipo de fin de línea
-      delay(5);                         //  Espera por el USB
-      if (!Serial.available()) {
-        complete = true;                //  Señaliza que la comunicación terminó
-      }
-    }
-    if (strVar.length() > 10) complete = true;
+    estadoAnte = plazaOcupada;
   }
 }

@@ -19,11 +19,13 @@ void updateSerial(unsigned long howLongToWait, bool imprime){
       }
       ristra.concat(character);
 
+      /*
       //  Esto cuando se recibe un SMS, no creo que sea necesario
       pos=ristra.indexOf("+CMT");   // SMS Received
       if (pos >= 0) {
         flagSMS=1;                  // Flag Activated
       }
+      */
     //}
   }
 } // end updateSerial
@@ -132,16 +134,16 @@ void setRTC(String &lectura){
         \___|_|  |_|  \___/|_|  |_____|_____|____/| |  | |
                                                    \_\/_/ 
 *********************************************************************************/
-//  Enciende el LED sobre el MCU un numero de veces para señalizar algun error
+//  Enciende el LED sobre el MCU un número de veces para señalizar algún error
 void errorLED(uint8_t veces){
-  uint32_t tiemON = 300;
-  uint32_t tiemOFF = 150;
-  uint32_t tiemRepite = 800;
+  uint32_t timeON = 300;
+  uint32_t timeOFF = 150;
+  uint32_t timeRepite = 800;
   for(int i = 0; i < veces; i++){
     digitalWrite(LED_BUILTIN, HIGH);      //  Enciende el LED
-    delay(tiemON);
+    delay(timeON);
     digitalWrite(LED_BUILTIN, LOW);       //  Apaga el LED
-    delay(tiemOFF);
+    delay(timeOFF);
   }
-  delay(tiemRepite);
+  delay(timeRepite);
 }

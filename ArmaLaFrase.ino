@@ -11,7 +11,7 @@ bool armaFrase(char letra, String &ans){
   //Serial.println("Entro en armaLaFrase");
   /*
   if(!isprint(letra)){
-    Serial.println("Upa esto no se puede");
+    Serial.println("Esto no se puede");
     return false;
   }
   */

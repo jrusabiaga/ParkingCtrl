@@ -14,7 +14,8 @@ void sendSMS(String numero, String SMS){
   while(cobertura() != 1){
     resetModule();
     uint32_t lapso = millis();
-    // Atención a la proxima linea, creo que no hace falta
+    
+    // Atención a la próxima linea, creo que no hace falta
     afterReset(lapso);
   }
 
@@ -22,12 +23,12 @@ void sendSMS(String numero, String SMS){
   Serial.println(numero); 
   
   Serial2.print("AT+CMGS=\"" + numero + "\"\r");
-  updateSerial(800, false);
+  updateSerial(800, true);
   Serial2.print(SMS);         //  Se envía el texto del mensaje
-  updateSerial(800, false);
+  updateSerial(800, true);
   Serial2.print((char)26);    // Código ASCII 0x1A de CTRL+Z señala fin del texto
   
-  updateSerial(1000, false);
+  updateSerial(1000, true);
   miDelay(5);
   Serial.println(" Enviado");
 
