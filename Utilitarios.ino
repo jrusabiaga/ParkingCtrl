@@ -1,5 +1,128 @@
 //CSpell: ignore minu
 /****************************************************************************
+                        _       _       ____            _       _ ____   ____  
+        _   _ _ __   __| | __ _| |_ ___/ ___|  ___ _ __(_) __ _| |___ \ / /\ \ 
+       | | | | '_ \ / _` |/ _` | __/ _ \___ \ / _ \ '__| |/ _` | | __) | |  | |
+       | |_| | |_) | (_| | (_| | ||  __/___) |  __/ |  | | (_| | |/ __/| |  | |
+        \__,_| .__/ \__,_|\__,_|\__\___|____/ \___|_|  |_|\__,_|_|_____| |  | |
+             |_|                                                        \_\/_/ 
+ ****************************************************************************/
+//void updateSerial2(unsigned long howLongToWait, bool imprime){
+bool noLoCreo(unsigned long howLongToWait, bool imprime){
+  uint32_t tiempo = millis() + howLongToWait;
+  String termina = "OK";
+  String resp = "+CMGS:";
+  String respErr = "+CMS ERROR:";
+  bool recResp = false;       //  Se hace sierto cuando se recibe la "resp"
+  bool recTermina = false;    //  Se hace sierto cuando se recibe el "termina"
+  bool recRespErr = false;    //  Se hace sierto cuando se recibe el "respErr"
+  int pos = 0;                //  Posición donde se encuentra el texto
+
+  
+  if(imprime) Serial.print("updateSerial2 =>");
+  while(tiempo > millis() && (!recResp && !recTermina)){
+    while ((Serial2.available()))  {
+      char character = Serial2.read();
+      if(imprime){
+        //Serial.write(character);// Send all data to Serial Port.
+        Serial.print(character);
+        //Serial.print("~");
+      }
+      ristra.concat(character);
+
+      //  Espera las respuestas correctas
+      if(!recResp){
+        pos = ristra.indexOf(resp);
+        if (pos >= 0) {
+          if(imprime) Serial.print(":");
+          Serial.print("\n-·" + ristra + "·- resp pos: ");
+          Serial.println(pos);
+          recResp = true;
+          pos = 0;
+        }
+      }
+      if(!recTermina){
+        pos = ristra.indexOf(termina);
+        if (pos >= 0) {
+          if(imprime) Serial.print("·");
+          Serial.print("\n-·" + ristra + "·- ok pos: ");
+          Serial.println(pos);
+          recTermina = true;
+          pos = 0;
+        }
+      }
+      //  En caso de "+CMS ERROR: Network timeout" el mensaje no salio
+      if(!recRespErr){
+        pos = ristra.indexOf(respErr);
+        if (pos >= 0) {
+          if(imprime) Serial.print("X");
+          recRespErr = true;
+          recResp = false;
+          recTermina = false;
+          pos = 0;
+        }
+      }
+    }
+  }
+  if(imprime) Serial.print("<= updateSerial2\n");
+  if(imprime && (!recResp || !recTermina)) Serial.print("Timeout...\n");
+  return (recResp && recTermina);
+} // end updateSerial
+
+/****************************************************************************
+                        _       _       ____            _       _ _____  ____  
+        _   _ _ __   __| | __ _| |_ ___/ ___|  ___ _ __(_) __ _| |___ / / /\ \ 
+       | | | | '_ \ / _` |/ _` | __/ _ \___ \ / _ \ '__| |/ _` | | |_ \| |  | |
+       | |_| | |_) | (_| | (_| | ||  __/___) |  __/ |  | | (_| | |___) | |  | |
+        \__,_| .__/ \__,_|\__,_|\__\___|____/ \___|_|  |_|\__,_|_|____/| |  | |
+             |_|                                                        \_\/_/ 
+ ****************************************************************************/
+bool updateSerial3(unsigned long howLongToWait, String esperaPor, bool imprime){
+  uint32_t tiempo = millis() + howLongToWait;
+  bool respCorrecta = false;
+  int pos = 0;                //  Posición donde se encuentra el texto
+  
+  if(imprime) (void)Serial.print("->>>");
+  while(tiempo > millis() && !respCorrecta){
+    while ((Serial2.available()))  {
+      char character = Serial2.read();
+      if(imprime){
+        //Serial.write(character);// Send all data to Serial Port.
+        Serial.print(character);
+        //Serial.print("~");
+      }
+      ristra.concat(character);
+
+      //  Espera las respuestas correctas
+      if(!respCorrecta){
+        pos = ristra.indexOf(esperaPor);
+        if (pos >= 0) {
+          if(imprime) Serial.print(":");
+          Serial.print("\n-·" + ristra + "·- resp pos: ");
+          Serial.println(pos);
+          respCorrecta = true;
+          pos = 0;
+        }
+      }
+
+      /*
+      //  Esto cuando se recibe un SMS, no creo que sea necesario
+      pos=ristra.indexOf("+CMT");   // SMS Received
+      if (pos >= 0) {
+        flagSMS=1;                  // Flag Activated
+      }
+      */
+    //}
+    }
+  }
+  if(imprime){
+    Serial.print("<<<- ");
+    Serial.println(respCorrecta ? "true": "false");
+  }
+  return respCorrecta ? true: false;
+} // end updateSerial3
+
+/****************************************************************************
                         _       _       ____            _       _  ____  
         _   _ _ __   __| | __ _| |_ ___/ ___|  ___ _ __(_) __ _| |/ /\ \ 
        | | | | '_ \ / _` |/ _` | __/ _ \___ \ / _ \ '__| |/ _` | | |  | |
@@ -10,6 +133,7 @@
 void updateSerial(unsigned long howLongToWait, bool imprime){
   delay(howLongToWait);
   
+  if(imprime) Serial.print("->>");
   while ((Serial2.available()))  {
     char character = Serial2.read();
       if(imprime){
@@ -28,6 +152,7 @@ void updateSerial(unsigned long howLongToWait, bool imprime){
       */
     //}
   }
+  if(imprime) Serial.print("<<-\n");
 } // end updateSerial
 
 /****************************************************************************

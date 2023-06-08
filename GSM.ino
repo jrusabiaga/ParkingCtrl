@@ -192,6 +192,10 @@ void initGSM(){
   lectura = "";
   basura = envia("AT&W0", lectura, "OK", "ERROR", 9000, SHOW);
 
+  if(SHOW) Serial.println("\nRevisión parametro CREG");
+  lectura = "";
+  basura = envia("AT+CREG", lectura, "OK", "ERROR", 9000, SHOW);
+
 }
 
 /****************************************************************************

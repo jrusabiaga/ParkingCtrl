@@ -202,14 +202,33 @@ void loop() {
       beginGSM();               //  Enciende el módulo A7670E y espera por el
       initGSM();                //  Configuración inicial del módulo
       
+      Serial.print("***********************  COMIENZA  ***********************");
+      Serial.println("");
       //  Se ensambla el mensaje saliente
       SMS = "Plaza ";
       SMS += plazaOcupada ? "OCUPADA\n" : "LIBRE\n";
-      SMS += rtc.getTime("%B %d %H:%M:%S\n");
-      Serial.println(SMS);
+      String endSMS = SMS + rtc.getTime("%B %d %H:%M:%S\n");
+      endSMS = endSMS + "1\n" + "*** Comienza ***";
+      Serial.println(endSMS);
 
       //  Se envía el SMS
-      sendSMS(NUMERO, SMS);
+      //String perSMS = endSMS + "1\n" + "*** Comienza ***";
+      sendSMS(NUMERO, endSMS);
+      for(int i = 2; i < 10; i++){
+        endSMS = SMS + rtc.getTime("%B %d %H:%M:%S\n");
+        endSMS += String(i);
+        Serial.println(endSMS);
+        sendSMS(NUMERO, endSMS);
+        //sendSMS("+34671110470", SMS);
+      }
+      //sendSMS("+34671110470", SMS);
+      endSMS = SMS + rtc.getTime("%B %d %H:%M:%S\n");
+      endSMS = endSMS + "10\n" + "*** Termina ***";
+      sendSMS(NUMERO, endSMS);
+      Serial.println("");
+      Serial.println("***********************  Quieto parao  ***********************");
+      //for(;;);
+
       //miDelay(3);
 
       //  Desactivar el módulo A7670E hasta que sea necesario
