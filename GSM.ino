@@ -22,8 +22,6 @@ void beginGSM(){
   //  "PB DONE" así que: se espera eso
   Serial.println("Módulo A7670E activado");
   digitalWrite(MOSFET, HIGH);
-  //Serial.println("\nComunicación con el módulo A7670E...");
-  //Serial.println("\nAbriendo un canal con el módulo A7670E...");
   Serial.println("\nIntentando comunicar con el módulo A7670E...");
   //miDelay(20);
   uint32_t lap = millis();
@@ -184,7 +182,7 @@ void initGSM(){
   miDelay(1);
   if(SHOW) basura = envia("AT+CNMI=1", lectura, "OK", "ERROR", 300, SHOW);
 
-  if(SHOW) Serial.println("\nActualizo RTC del ESP32");
+  if(SHOW) Serial.println("\nActualiza RTC del ESP32");
   miDelay(1);
   lectura = "+CCLK:";
   basura = envia("AT+CCLK?", lectura, "OK", "ERROR", 200, SHOW);

@@ -35,8 +35,23 @@ void sendSMS(String numero, String SMS){
       Serial.println(Serial2.print("AT+CMGS=\"" + numero + "\"\r"));
       //updateSerial(800, true);
       sigue = !updateSerial3(800, ">", true);
+      //  Si el módulo no responde y se queda en un loop infinito
+      //  Se reiniciliza y configura
+      if(sigue){
+        Serial.println("\nNo responde RESET del módulo");
+        //  Se apaga el módulo A7670E
+        Serial.println("Módulo A7670E desactivado");
+        digitalWrite(MOSFET, LOW);
+        miDelay(4);
+
+        //  Se reinicia y configura el módulo nuevamente
+        //  El Modem GSM puede tardar mas de 25 segundos en arrancar
+        beginGSM();               //  Enciende el módulo A7670E y espera por el
+        initGSM();                //  Configuración inicial del módulo      
+      }
       miDelay(1);
     }
+
     Serial.print("\nCuerpo del Mensaje ");
     Serial.println(Serial2.print(SMS));
     //Serial2.print(SMS);         //  Se envía el texto del mensaje

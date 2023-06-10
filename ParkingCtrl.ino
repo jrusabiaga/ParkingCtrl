@@ -6,10 +6,10 @@ Description	:	Sistema de control de aparcamiento utilizando un ESP32, un sensor
               láser ToF y un módulo A7670E puede detectar el estado de ocupación
               de una plaza de aparcamiento cada minuto. Si se produce un cambio
               en el estado, se activará un MOSFET que encenderá el módulo A7670E.
-              Una vez activo y conectado a la red, enviará un SMS a un número
-              preestablecido para notificar el estado de la plaza de aparcamiento.
-              Luego, el módulo A7670E se desactivará hasta el próximo cambio en el
-              estado de la plaza.
+              Una vez activo y conectado a la red, enviará un SMS a cada número
+              preestablecido en la lista de clientes, para notificar el estado
+              de la plaza de aparcamiento. Luego, el módulo A7670E se desactivará
+              hasta el próximo cambio en el estado de la plaza.
 
               Este sistema permite monitorear de forma periódica el estado de
               ocupación de la plaza de aparcamiento y enviar notificaciones en
@@ -103,24 +103,24 @@ struct Registro {
   char movil[10];
 };
 
-int const cantidad = 10;
+int const numCli = 10;          //  Número de clientes
 
 // Crear una lista de registros
 //Registro registros[10] = {
-Registro registros[cantidad] = {
-  {1, "Juan", "603372696"},         //  Registro 0
-  {2, "María", "603372696"},        //  Registro 1
-  {3, "Pedro", "603372696"},        //  Registro 2
-  {4, "Laura", "603372696"},        //  Registro 3
-  {5, "Lucas", "603372696"},        //  Registro 4
-  {6, "Ana", "603372696"},          //  Registro 5
-  {7, "Luis", "603372696"},         //  Registro 6
-  {8, "Sofía", "603372696"},        //  Registro 7
-  {9, "Diego", "603372696"},        //  Registro 8
-  {10, "Valeria", "603372696"}      //  Registro 9
+Registro registros[numCli] = {
+  {1, "Juan", "603372696"},     //  Registro 0
+  {2, "Maria", "603372696"},    //  Registro 1
+  {3, "Pedro", "603372696"},    //  Registro 2
+  {4, "Laura", "603372696"},    //  Registro 3
+  {5, "Lucas", "603372696"},    //  Registro 4
+  {6, "Ana", "603372696"},      //  Registro 5
+  {7, "Luis", "603372696"},     //  Registro 6
+  {8, "Sofia", "603372696"},    //  Registro 7
+  {9, "Diego", "603372696"},    //  Registro 8
+  {10, "Valeria", "603372696"}  //  Registro 9
 };
 
-/****************************************************************************
+/***************************************************************************
 								 _                ____
 			  ___  ___| |_ _   _ _ __  / /\ \
 			 / __|/ _ \ __| | | | '_ \| |  | |
@@ -170,43 +170,8 @@ void setup() {
 
     //  Iniciañiza SPIFFS y crear fichero de clientes
   dbClienteIni();
-  /*
-  Serial.println("De nuevo...");
-  Serial.print("El tamaño es: ");
-  size_t length = sizeof(registros) / sizeof(registros[0]);
-  Serial.println(length); 
-  for (int i = 0; i < cantidad; i++) {
-    //Serial.print("Número: ");
-    if(registros[i].numero != 0){
-      //Serial.print(registros[i].numero);
-      //Serial.print(", ");
-      Serial.print(registros[i].nombre);
-      Serial.print(", ");
-      Serial.println(registros[i].movil);
-      //Serial.println("---------------------");
-    }
-  }
-  */
-
-/*********************** INICIALIZANDO módulo A7076E ***********************/
-/*
-  //  El Modem GSM puede tardar mas de 25 segundos en arrancar
-  beginGSM();               //  Enciende el módulo A7670E y espera por el
-  initGSM();                //  Configuración inicial del módulo 
-
-  Serial.println("");
-  Serial.println("******************** INICIALIZADO ********************");
-*/
-
-  //  Desactivar el módulo A7670E hasta que sea necesario
-  Serial.println("Módulo A7670E desactivado");
-  digitalWrite(MOSFET, LOW);
-  miDelay(1);
-
-  //lapso = -INTERVALO;         //  Se utiliza para contar el tiempo en el loop()
 
 }
-
 
 /****************************************************************************
 			 _                    ____
@@ -224,12 +189,15 @@ void loop() {
     lapso = millis();         //  Comienza el conteo de tiempo
   	getLidarData();           //  Se mide la distancia del obstáculo en la plaza
 
+    //  Verifica si hay algun coche aparcado en la plaza, para esto: 
+    //  utiliza el sensor de distancia
     if (medida >= DIST_MIN) {
       plazaOcupada = false; 
     } else {
       plazaOcupada = true; 
     }
 
+    //  La primera vez que se ejecuta el loop(): Arranque en frio del MCU
     if (arranca) {
       arranca = false;
       Serial.print("La plaza está ");
@@ -237,6 +205,7 @@ void loop() {
       estadoAnte = !plazaOcupada;
     }
 
+    //  Comienza el monitoreo de la plaza y la comunicacion via SMSs
     if (plazaOcupada == estadoAnte) {
       Serial.print("La plaza sigue ");
       Serial.println(plazaOcupada ? "OCUPADA" : "LIBRE");
@@ -250,39 +219,28 @@ void loop() {
       
       Serial.print("***********************  COMIENZA  ***********************");
       Serial.println("");
-      //  Se ensambla el mensaje saliente
-      SMS = "Plaza ";
-      SMS += plazaOcupada ? "OCUPADA\n" : "LIBRE\n";
-      String endSMS = SMS + rtc.getTime("%B %d %H:%M:%S\n");
-      endSMS = endSMS + "1\n" + "*** Comienza ***";
-      Serial.println(endSMS);
 
-      //  Se envía el SMS
-      //String perSMS = endSMS + "1\n" + "*** Comienza ***";
-      sendSMS(NUMERO, endSMS);
-      for(int i = 2; i < 10; i++){
-        endSMS = SMS + rtc.getTime("%B %d %H:%M:%S\n");
-        endSMS += String(i);
-        Serial.println(endSMS);
-        sendSMS(NUMERO, endSMS);
-        //sendSMS("+34671110470", SMS);
+      //  Se envían los SMS
+      for(int i = 0; i < numCli; i++){
+        //  Se ensambla el mensaje saliente
+        SMS = "Hola  ";
+        SMS += registros[i].nombre;
+        SMS += "\nPlaza ";
+        SMS += plazaOcupada ? "OCUPADA\n" : "LIBRE\n";
+        SMS += rtc.getTime("%B %d %H:%M:%S\n");
+        //Serial.println(SMS);
+        sendSMS(registros[i].movil, SMS);
       }
-      //sendSMS("+34671110470", SMS);
-      endSMS = SMS + rtc.getTime("%B %d %H:%M:%S\n");
-      endSMS = endSMS + "10\n" + "*** Termina ***";
-      sendSMS(NUMERO, endSMS);
+      Serial.print("***********************  TERMINA  ***********************");
       Serial.println("");
-      Serial.println("***********************  Quieto parao  ***********************");
-      //for(;;);
 
-      //miDelay(3);
-
-      //  Desactivar el módulo A7670E hasta que sea necesario
+      //  Desactivar el módulo A7670E para ahorrar batería
       Serial.println("Módulo A7670E desactivado");
       digitalWrite(MOSFET, LOW);
 
     }
 
+    //  Cambia el estadoAnterior a el estado actual
     estadoAnte = plazaOcupada;
   }
 }

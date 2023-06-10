@@ -128,6 +128,7 @@ void borraFichero(fs::FS &fs, const char * path){
        |_.__/ \___/|_|  |_|  \__,_|_|  |_| \_\___|\__, | |  | |
                                                   |___/ \_\/_/ 
 ****************************************************************************/
+/*
 void borraReg(int numero) {
   File file = SPIFFS.open("/lista.dat", "r");
   if (!file) {
@@ -153,3 +154,5 @@ void borraReg(int numero) {
   // Guardar los registros actualizados
   salvaRegs(registros, cantidad / sizeof(Registro));
 }
+*/
+
