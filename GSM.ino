@@ -28,8 +28,8 @@ void beginGSM(){
   //miDelay(20);
   uint32_t lap = millis();
 
-  //  Espera "PB DONE" en un máximo de 20 segundos
-  while(millis() < lap + 30000){
+  //  Espera "PB DONE" en un máximo de 40 segundos
+  while(millis() < lap + 40000){
     while(Serial2.available()) {                //  Respuesta del Modem
       char letra = Serial2.read();              //  Lo pilla letra a letra
       if(armaFrase(letra, resp)){               //  Ensambla la frase
@@ -75,6 +75,7 @@ void beginGSM(){
     Serial.println("     **** ERROR FATAL ****");
     Serial.println("No se encontró el Módulo A7670E");
     Serial.println("Ejecución terminada");
+    digitalWrite(MOSFET, LOW);
     for(;;){
       errorLED(1);
     }
@@ -84,6 +85,7 @@ void beginGSM(){
     Serial.println("     **** ERROR FATAL ****");
     Serial.println("No se encontró la tarjeta SIM");
     Serial.println("Ejecución terminada");
+    digitalWrite(MOSFET, LOW);
     for(;;){
       errorLED(2);
     }
@@ -191,10 +193,6 @@ void initGSM(){
   if(SHOW) Serial.println("\nGuardo configuración del módulo A7670E");
   lectura = "";
   basura = envia("AT&W0", lectura, "OK", "ERROR", 9000, SHOW);
-
-  if(SHOW) Serial.println("\nRevisión parametro CREG");
-  lectura = "";
-  basura = envia("AT+CREG", lectura, "OK", "ERROR", 9000, SHOW);
 
 }
 

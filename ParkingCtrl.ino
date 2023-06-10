@@ -30,6 +30,7 @@ Components	:
 
 *****************************************************************************/
 #include <ESP32Time.h>          //  ESP32 Time functionality
+#include <SPIFFS.h>             //  Manejo de ficheros en memoria flash
 
 #define LED_BUILTIN     2       //  LED sobre el MCU
 #define MOSFET          4       //  Pin que controla la alimentación del A7670E
@@ -95,6 +96,30 @@ uint8_t verifica;               //  Suma de verificación enviada por el TFMini
 unsigned int charCabeza = 'Y';  //  Carácter usado para comienzo de datos
 int byteNum = 1;                //  Lleva la cuenta del numero del byte
 
+//  Registro usado para almacenar clientes en fichero .dat
+struct Registro {
+  int numero;
+  char nombre[16];
+  char movil[10];
+};
+
+int const cantidad = 10;
+
+// Crear una lista de registros
+//Registro registros[10] = {
+Registro registros[cantidad] = {
+  {1, "Juan", "603372696"},         //  Registro 0
+  {2, "María", "603372696"},        //  Registro 1
+  {3, "Pedro", "603372696"},        //  Registro 2
+  {4, "Laura", "603372696"},        //  Registro 3
+  {5, "Lucas", "603372696"},        //  Registro 4
+  {6, "Ana", "603372696"},          //  Registro 5
+  {7, "Luis", "603372696"},         //  Registro 6
+  {8, "Sofía", "603372696"},        //  Registro 7
+  {9, "Diego", "603372696"},        //  Registro 8
+  {10, "Valeria", "603372696"}      //  Registro 9
+};
+
 /****************************************************************************
 								 _                ____
 			  ___  ___| |_ _   _ _ __  / /\ \
@@ -143,13 +168,35 @@ void setup() {
   Serial.println(F("de ser desactivado hasta el próximo cambio."));
   Serial.println(F("\n\n"));
 
-  /************************ INICIALIZANDO módulo A7076E *********************************/
+    //  Iniciañiza SPIFFS y crear fichero de clientes
+  dbClienteIni();
+  /*
+  Serial.println("De nuevo...");
+  Serial.print("El tamaño es: ");
+  size_t length = sizeof(registros) / sizeof(registros[0]);
+  Serial.println(length); 
+  for (int i = 0; i < cantidad; i++) {
+    //Serial.print("Número: ");
+    if(registros[i].numero != 0){
+      //Serial.print(registros[i].numero);
+      //Serial.print(", ");
+      Serial.print(registros[i].nombre);
+      Serial.print(", ");
+      Serial.println(registros[i].movil);
+      //Serial.println("---------------------");
+    }
+  }
+  */
+
+/*********************** INICIALIZANDO módulo A7076E ***********************/
+/*
   //  El Modem GSM puede tardar mas de 25 segundos en arrancar
   beginGSM();               //  Enciende el módulo A7670E y espera por el
   initGSM();                //  Configuración inicial del módulo 
 
   Serial.println("");
   Serial.println("******************** INICIALIZADO ********************");
+*/
 
   //  Desactivar el módulo A7670E hasta que sea necesario
   Serial.println("Módulo A7670E desactivado");
@@ -157,7 +204,6 @@ void setup() {
   miDelay(1);
 
   //lapso = -INTERVALO;         //  Se utiliza para contar el tiempo en el loop()
-
 
 }
 
