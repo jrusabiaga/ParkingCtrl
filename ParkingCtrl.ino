@@ -108,16 +108,16 @@ int const numCli = 10;          //  Número de clientes
 // Crear una lista de registros
 //Registro registros[10] = {
 Registro registros[numCli] = {
-  {1, "Juan", "603372696"},     //  Registro 0
-  {2, "Maria", "603372696"},    //  Registro 1
-  {3, "Pedro", "603372696"},    //  Registro 2
-  {4, "Laura", "603372696"},    //  Registro 3
-  {5, "Lucas", "603372696"},    //  Registro 4
-  {6, "Ana", "603372696"},      //  Registro 5
-  {7, "Luis", "603372696"},     //  Registro 6
-  {8, "Sofia", "603372696"},    //  Registro 7
-  {9, "Diego", "603372696"},    //  Registro 8
-  {10, "Valeria", "603372696"}  //  Registro 9
+  {1, "Juan", "647475070"},     //  Registro 0
+  {2, "Maria", "647475070"},    //  Registro 1
+  {3, "Pedro", "647475070"},    //  Registro 2
+  {4, "Laura", "647475070"},    //  Registro 3
+  {5, "Lucas", "647475070"},    //  Registro 4
+  {6, "Ana", "647475070"},      //  Registro 5
+  {7, "Luis", "647475070"},     //  Registro 6
+  {8, "Sofia", "647475070"},    //  Registro 7
+  {9, "Diego", "647475070"},    //  Registro 8
+  {10, "Valeria", "647475070"}  //  Registro 9
 };
 
 /***************************************************************************
