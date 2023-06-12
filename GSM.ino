@@ -54,13 +54,13 @@ void beginGSM(){
       Serial.println("Probando si el módulo ya estaba encendido");
       Serial2.println("AT");
       once = false;
-      while(Serial2.available()) {            //  Respuesta del Modem
-        char letra = Serial2.read();          //  Lectura letra a letra
-        if(armaFrase(letra, resp)){           //  Ensambla una frase
+      while(Serial2.available()) {   //  Respuesta del Modem
+        char letra = Serial2.read(); //  Lectura letra a letra
+        if(armaFrase(letra, resp)){  //  Ensambla una frase
           Serial.print(resp);
           Serial.println("");
           if(resp.indexOf("OK") >= 0){
-            arranco = true;               //  Se asume que esta encendido
+            arranco = true;          //  Se asume que esta encendido
             break;
           }
         }
@@ -68,7 +68,7 @@ void beginGSM(){
     }
     if(arranco) break;
   }
-  if(!arranco){       //  El módulo no respondió en el tiempo dado
+  if(!arranco){                      //  El módulo no respondió en el tiempo dado
     Serial.println("\n");
     Serial.println("     **** ERROR FATAL ****");
     Serial.println("No se encontró el Módulo A7670E");
@@ -78,7 +78,7 @@ void beginGSM(){
       errorLED(1);
     }
   }
-  if(simNotFound){
+  if(simNotFound){                   //  El módulo reporta que no hay SIM
     Serial.println("\n");
     Serial.println("     **** ERROR FATAL ****");
     Serial.println("No se encontró la tarjeta SIM");
@@ -88,10 +88,8 @@ void beginGSM(){
       errorLED(2);
     }
   }
-  //Serial.println("\nMódulo A7670E encontrado...");
   Serial.println("\nComunicación establecida con el módulo A7670E");
   Serial.println("");
-  //Serial.println("Esperando señal...");
   Serial.println("2 min. de espera por la señal de la red de telefonía móvil...");
 
   //  El módulo ya esta encendido. Ahora se espera hasta que se conecte con
@@ -103,9 +101,6 @@ void beginGSM(){
     lectura = "+CREG:";
     bool basura = envia("AT+CREG?", lectura, "OK", "ERROR", 9000, false);
     uint8_t parametro = lectura.substring(9,10).toInt();
-    //Serial.print(lectura);
-    //Serial.print("\t parámetro = "); Serial.println(parámetro);
-    //Serial.println(millis());
     if(parametro == 1 || parametro == 5){ //  1 esta en línea, 5 esta en roaming
       conexion = true;
       break;
@@ -140,6 +135,7 @@ void beginGSM(){
         |_|_| |_|_|\__|\____|____/|_|  |_| |  | |
                                           \_\/_/ 
  ****************************************************************************/
+//  Configuración del módulo A7670E
 void initGSM(){
   
   Serial.println("\n\nConfiguración inicial...");
@@ -225,7 +221,6 @@ uint8_t cobertura(){
   //      6   registered for "SMS only", home network (applicable only when
   //          E-UTRAN)  Serial.println("\n\nCobertura...");
   //
-  //Serial.println("Cobertura...");
   uint8_t parametro = 10;
   uint8_t delim1 = 0;
   uint8_t delim2 = 0;
@@ -236,20 +231,6 @@ uint8_t cobertura(){
   bool basura = envia("AT+CREG?", lectura, "OK", "ERROR", 9000, false);
   //  Se toma el valor de <stat>
   parametro = lectura.substring(9,10).toInt();
-  
-  //  Debug del parse y ejemplos de respuesta
-  //Serial.println(lectura);
-  //Serial.print("=>");
-  //Serial.print(parametro);
-  //Serial.println("<=\n\n");
-  //  0 = not registered, ME is not currently searching a new operator
-  //  to register to.
-  
-  //+CEREG: 2,1,0957,0A89DD70
-  //+CEREG: 2,11,0000,00000000
-  //+CEREG: 1,0957,0A89DD70,7
-  //+CGEV: EPS PDN ACT 1
-  
   
   return parametro;
 }
@@ -265,10 +246,6 @@ uint8_t cobertura(){
 void resetModule(){ 
   uint32_t lap =  millis();
   Serial2.println("AT+CRESET");
-  Serial.println("Paro");
-  miDelay(10);
-  Serial.println("Paso");
-  //afterReset(lap);
 }
 
 /****************************************************************************
@@ -285,16 +262,14 @@ bool afterReset(uint32_t lap){
   String resp = "";
   while(millis() < lap + 600000){
     //  Si esta activo y conectado sale
-    //if(condicion1 && condicion2){
     if(condicion1){
-      //initGSM();
       break;
     }
     if (Serial2.available()) {
       char letra = Serial2.read();
       if(armaFrase(letra, resp)){
         Serial.println(resp);
-        //  Ultima respuesta de los módulos SIM7600X y A7670E
+        //  Ultima respuesta del módulo A7670E
         //  al arrancar
         if(resp == "PB DONE"){
           Serial.println("Condicion cumplida");
@@ -310,7 +285,6 @@ bool afterReset(uint32_t lap){
       }
     }
   }
-  //return (condicion1 && condicion2);
   return (condicion1);
 }
 

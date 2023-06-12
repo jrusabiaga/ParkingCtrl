@@ -1,3 +1,4 @@
+//CSpell: ignore inte, movil
 #define FILE_NAME "ParkingCtrl.ino"
 /****************************************************************************
 	Control inteligente de Puesto de parking
@@ -43,10 +44,11 @@ Components	:
 #define SHOW            true    //  Salidas cuando inicializa el A7670E
 
 #define DIST_MIN        150     //  Distancia mínima hasta el coche
+#define NUM_CONFIRMA    2       //  Número de veces que confirma el estado del parking
 #define INTERVALO       60000   //  Intervalo para verificar la plaza 1 min.
 
-//#define NUMERO   "+34647475070" //  Número de contacto Móvil 1
-#define NUMERO   "+34603372696" //  Número de contacto Movil 2
+#define NUMERO      "647475070" //  Número de contacto Móvil 1
+//#define NUMERO      "603372696" //  Número de contacto Movil 2
 
 /****************************************************************************
 			  ____ _     ___  ____    _    _     ____
@@ -65,6 +67,7 @@ ESP32Time rtc(0);               //  Offset in seconds GMT
 long const bpsC = 115200;       //  Velocidad de conexión con la consola
 long const bpsG = 115200;       //  Velocidad de conexión con el A7670E
 long const bpsL = 115200;       //  Velocidad de conexión con el LÁSER
+uint8_t confirmacion = 0;       //  Veces que se confirma el estado de la plaza
 bool plazaOcupada = false;      //  Estado actual de la plaza
 bool estadoAnte = true;         //  Estado de lectura anterior
 bool arranca = true;            //  Solo cuando arranca en frio
@@ -105,19 +108,29 @@ struct Registro {
 
 int const numCli = 10;          //  Número de clientes
 
+//  El número de veces que puedes escribir en la memoria flash de un ESP32 está
+//  limitado, el número exacto depende del dispositivo específico y la
+//  biblioteca utilizada. La memoria flash está diseñada para aproximadamente
+//  100,000 a 1,000,000 de operaciones de escritura.
+
+//  Cambiar el valor de "nuevaLista" a true cuando se modifique la lista y una
+//  vez ejecutado el sketch, cambiar a false y volver a compilar y subir el
+//  sketch para extender la vida util de la memoria flash.
+bool const nuevaLista = false;
+
 // Crear una lista de registros
 //Registro registros[10] = {
 Registro registros[numCli] = {
-  {1, "Juan", "647475070"},     //  Registro 0
-  {2, "Maria", "647475070"},    //  Registro 1
-  {3, "Pedro", "647475070"},    //  Registro 2
-  {4, "Laura", "647475070"},    //  Registro 3
-  {5, "Lucas", "647475070"},    //  Registro 4
-  {6, "Ana", "647475070"},      //  Registro 5
-  {7, "Luis", "647475070"},     //  Registro 6
-  {8, "Sofia", "647475070"},    //  Registro 7
-  {9, "Diego", "647475070"},    //  Registro 8
-  {10, "Valeria", "647475070"}  //  Registro 9
+  {1, "Juan", NUMERO},          //  Registro 0
+  {2, "Maria", NUMERO},         //  Registro 1
+  {3, "Pedro", NUMERO},         //  Registro 2
+  {4, "Laura", NUMERO},         //  Registro 3
+  {5, "Lucas", NUMERO},         //  Registro 4
+  {6, "Ana", NUMERO},           //  Registro 5
+  {7, "Luis", NUMERO},          //  Registro 6
+  {8, "Sofia", NUMERO},         //  Registro 7
+  {9, "Diego", NUMERO},         //  Registro 8
+  {10, "Valeria", NUMERO}       //  Registro 9
 };
 
 /***************************************************************************
@@ -159,7 +172,6 @@ void setup() {
     // wait for serial port. Needed for boards with native USB port
   }
 
-
   //  Sketch ID on the terminal
   Serial.println(F(FILE_NAME));
   for(int i = 0; i < 70; i++) Serial.print("-"); Serial.println("");
@@ -168,8 +180,8 @@ void setup() {
   Serial.println(F("de ser desactivado hasta el próximo cambio."));
   Serial.println(F("\n\n"));
 
-    //  Iniciañiza SPIFFS y crear fichero de clientes
-  dbClienteIni();
+  //  Inicializa SPIFFS y crear fichero de clientes
+  if(nuevaLista) dbClienteIni();
 
 }
 
@@ -189,7 +201,7 @@ void loop() {
     lapso = millis();         //  Comienza el conteo de tiempo
   	getLidarData();           //  Se mide la distancia del obstáculo en la plaza
 
-    //  Verifica si hay algun coche aparcado en la plaza, para esto: 
+    //  Verifica si hay algún coche aparcado en la plaza, para esto: 
     //  utiliza el sensor de distancia
     if (medida >= DIST_MIN) {
       plazaOcupada = false; 
@@ -204,43 +216,48 @@ void loop() {
       Serial.println(plazaOcupada ? "OCUPADA" : "LIBRE");
       estadoAnte = !plazaOcupada;
     }
-
-    //  Comienza el monitoreo de la plaza y la comunicacion via SMSs
+    //  Comienza el monitoreo de la plaza y la comunicación via SMSs
     if (plazaOcupada == estadoAnte) {
+      confirmacion = 0;
       Serial.print("La plaza sigue ");
       Serial.println(plazaOcupada ? "OCUPADA" : "LIBRE");
     } else {
       Serial.print("La plaza ahora ");
       Serial.println(plazaOcupada ? "se OCUPÓ" : "esta LIBRE");
+      confirmacion ++;
+      //  Solo se confirma cuando por NUM_CONFIRMA veces 
+      if(confirmacion == NUM_CONFIRMA){
+        //  El Modem GSM puede tardar mas de 25 segundos en arrancar
+        beginGSM();               //  Enciende el módulo A7670E y espera por el
+        initGSM();                //  Configuración inicial del módulo
+        
+        Serial.print("***********************  COMIENZA  ***********************");
+        Serial.println("");
 
-      //  El Modem GSM puede tardar mas de 25 segundos en arrancar
-      beginGSM();               //  Enciende el módulo A7670E y espera por el
-      initGSM();                //  Configuración inicial del módulo
-      
-      Serial.print("***********************  COMIENZA  ***********************");
-      Serial.println("");
+        //  Se envían los SMS
+        //for(int i = 0; i < numCli; i++){
+        for(int i = 0; i < 1; i++){
+          //  Se ensambla el mensaje saliente
+          SMS = "Hola  ";
+          SMS += registros[i].nombre;
+          SMS += "\nPlaza ";
+          SMS += plazaOcupada ? "OCUPADA\n" : "LIBRE\n";
+          SMS += rtc.getTime("%B %d %H:%M:%S\n");
+          //Serial.println(SMS);
+          sendSMS(registros[i].nombre, registros[i].movil, SMS);
+          miDelay(3);
+        }
+        Serial.print("***********************  TERMINA  ***********************");
+        Serial.println("");
 
-      //  Se envían los SMS
-      for(int i = 0; i < numCli; i++){
-        //  Se ensambla el mensaje saliente
-        SMS = "Hola  ";
-        SMS += registros[i].nombre;
-        SMS += "\nPlaza ";
-        SMS += plazaOcupada ? "OCUPADA\n" : "LIBRE\n";
-        SMS += rtc.getTime("%B %d %H:%M:%S\n");
-        //Serial.println(SMS);
-        sendSMS(registros[i].movil, SMS);
+        //  Desactivar el módulo A7670E para ahorrar batería
+        Serial.println("Módulo A7670E desactivado");
+        digitalWrite(MOSFET, LOW);
+
+        //  Cambia el estadoAnterior a el estado actual
+        estadoAnte = plazaOcupada;
       }
-      Serial.print("***********************  TERMINA  ***********************");
-      Serial.println("");
-
-      //  Desactivar el módulo A7670E para ahorrar batería
-      Serial.println("Módulo A7670E desactivado");
-      digitalWrite(MOSFET, LOW);
-
     }
 
-    //  Cambia el estadoAnterior a el estado actual
-    estadoAnte = plazaOcupada;
   }
 }

@@ -1,3 +1,4 @@
+//CSpell: ignore CMGS
 /*********************************************************************************
                            _ ____  __  __ ____   ____  
         ___  ___ _ __   __| / ___||  \/  / ___| / /\ \ 
@@ -7,7 +8,7 @@
                                                 \_\/_/ 
  ********************************************************************************/
 //  Envía el SMS al número
-void sendSMS(String numero, String SMS){
+void sendSMS(String nombre, String numero, String SMS){
 
   bool salio = false;
 
@@ -27,16 +28,19 @@ void sendSMS(String numero, String SMS){
     ristra = "";
 
     Serial.print("Envía SMS: "); 
-    Serial.println(numero); 
+    Serial.print(numero); 
+    Serial.print(" a "); 
+    Serial.println(nombre); 
     
     while(sigue){
       tiempo = millis();
-      Serial.print("\nComando de discado ");
-      Serial.println(Serial2.print("AT+CMGS=\"" + numero + "\"\r"));
-      //updateSerial(800, true);
-      sigue = !updateSerial3(800, ">", true);
+      //Serial.print("\nComando para enviar SMS ");
+      //Serial.println(Serial2.print("AT+CMGS=\"" + numero + "\"\r"));
+      Serial2.print("AT+CMGS=\"" + numero + "\"\r");
+      sigue = !updateSerial3(800, ">", false);
+
       //  Si el módulo no responde y se queda en un loop infinito
-      //  Se reiniciliza y configura
+      //  Se reinicia y configura
       if(sigue){
         Serial.println("\nNo responde RESET del módulo");
         //  Se apaga el módulo A7670E
@@ -52,26 +56,28 @@ void sendSMS(String numero, String SMS){
       miDelay(1);
     }
 
-    Serial.print("\nCuerpo del Mensaje ");
-    Serial.println(Serial2.print(SMS));
+    //Serial.print("\nCuerpo del Mensaje ");
+    //Serial.println(Serial2.print(SMS));
+    Serial2.print(SMS);
     //Serial2.print(SMS);         //  Se envía el texto del mensaje
-    updateSerial(800, true);
-    Serial.print("\nFin de Mensaje ");
-    Serial.println(Serial2.print((char)26));
-    //Serial2.print((char)26);    // Código ASCII 0x1A de CTRL+Z señala fin del texto
-    Serial.println("Final de mensaje enviado-----");
+    updateSerial(800, false);
+    //Serial.print("\nFin de Mensaje ");
+    //Serial.println(Serial2.print((char)26));
+    Serial2.print((char)26);    // Código ASCII 0x1A de CTRL+Z señala fin del texto
+    Serial.println("¡enviado!");
 
 
     miDelay(5);
     //  Verificar que no pase mas de 40 seg. 
-    salio = noLoCreo(40000 - (millis() - tiempo), true);
+    salio = updateSerial2(40000 - (millis() - tiempo), false);
 
     //  Impresión de lo que se a recibido del módulo A7670E
-    Serial.println("\nristra--------------------------------------------------------------------------");
+    Serial.println("Respuesta del A7670E --------------------------------------------------------");
     Serial.println(ristra);
-    Serial.println("ristra--------------------------------------------------------------------------");
+    Serial.println("FIN -------------------------------------------------------------------------");
+    Serial.println("");
 
-    //  Si el comando de envio y no responde algo pasa en el módulo
+    //  Si el comando de envío y no responde algo pasa en el módulo
     if(!salio){
       Serial.println("\nNo responde RESET del módulo");
       //  Se apaga el módulo A7670E
@@ -85,8 +91,6 @@ void sendSMS(String numero, String SMS){
       initGSM();                //  Configuración inicial del módulo      
     }
   }
-  Serial.println(" Enviado ###############################\n\n");
-
 
   //  Una vez enviados los SMS se limpian las variables
   SMS = "";

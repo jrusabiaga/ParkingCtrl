@@ -1,4 +1,4 @@
-//CSpell: ignore minu
+//CSpell: ignore minu CMGS
 /****************************************************************************
                         _       _       ____            _       _ ____   ____  
         _   _ _ __   __| | __ _| |_ ___/ ___|  ___ _ __(_) __ _| |___ \ / /\ \ 
@@ -8,14 +8,14 @@
              |_|                                                        \_\/_/ 
  ****************************************************************************/
 //void updateSerial2(unsigned long howLongToWait, bool imprime){
-bool noLoCreo(unsigned long howLongToWait, bool imprime){
+bool updateSerial2(unsigned long howLongToWait, bool imprime){
   uint32_t tiempo = millis() + howLongToWait;
   String termina = "OK";
   String resp = "+CMGS:";
   String respErr = "+CMS ERROR:";
-  bool recResp = false;       //  Se hace sierto cuando se recibe la "resp"
-  bool recTermina = false;    //  Se hace sierto cuando se recibe el "termina"
-  bool recRespErr = false;    //  Se hace sierto cuando se recibe el "respErr"
+  bool recResp = false;       //  Se hace cierto cuando se recibe la "resp"
+  bool recTermina = false;    //  Se hace cierto cuando se recibe el "termina"
+  bool recRespErr = false;    //  Se hace cierto cuando se recibe el "respErr"
   int pos = 0;                //  Posición donde se encuentra el texto
 
   
@@ -24,9 +24,7 @@ bool noLoCreo(unsigned long howLongToWait, bool imprime){
     while ((Serial2.available()))  {
       char character = Serial2.read();
       if(imprime){
-        //Serial.write(character);// Send all data to Serial Port.
         Serial.print(character);
-        //Serial.print("~");
       }
       ristra.concat(character);
 
@@ -34,9 +32,11 @@ bool noLoCreo(unsigned long howLongToWait, bool imprime){
       if(!recResp){
         pos = ristra.indexOf(resp);
         if (pos >= 0) {
-          if(imprime) Serial.print(":");
-          Serial.print("\n-·" + ristra + "·- resp pos: ");
-          Serial.println(pos);
+          if(imprime){
+            Serial.print(":");
+            Serial.print("\n-·" + ristra + "·- resp pos: ");
+            Serial.println(pos);
+          }
           recResp = true;
           pos = 0;
         }
@@ -44,9 +44,11 @@ bool noLoCreo(unsigned long howLongToWait, bool imprime){
       if(!recTermina){
         pos = ristra.indexOf(termina);
         if (pos >= 0) {
-          if(imprime) Serial.print("·");
-          Serial.print("\n-·" + ristra + "·- ok pos: ");
-          Serial.println(pos);
+          if(imprime){
+            Serial.print("·");
+            Serial.print("\n-·" + ristra + "·- ok pos: ");
+            Serial.println(pos);
+          }
           recTermina = true;
           pos = 0;
         }
@@ -67,7 +69,7 @@ bool noLoCreo(unsigned long howLongToWait, bool imprime){
   if(imprime) Serial.print("<= updateSerial2\n");
   if(imprime && (!recResp || !recTermina)) Serial.print("Timeout...\n");
   return (recResp && recTermina);
-} // end updateSerial
+} // end updateSerial2
 
 /****************************************************************************
                         _       _       ____            _       _ _____  ____  
@@ -87,9 +89,7 @@ bool updateSerial3(unsigned long howLongToWait, String esperaPor, bool imprime){
     while ((Serial2.available()))  {
       char character = Serial2.read();
       if(imprime){
-        //Serial.write(character);// Send all data to Serial Port.
         Serial.print(character);
-        //Serial.print("~");
       }
       ristra.concat(character);
 
@@ -97,22 +97,15 @@ bool updateSerial3(unsigned long howLongToWait, String esperaPor, bool imprime){
       if(!respCorrecta){
         pos = ristra.indexOf(esperaPor);
         if (pos >= 0) {
-          if(imprime) Serial.print(":");
-          Serial.print("\n-·" + ristra + "·- resp pos: ");
-          Serial.println(pos);
+          if(imprime){
+            Serial.print(":");
+            Serial.print("\n-·" + ristra + "·- resp pos: ");
+            Serial.println(pos);
+          }
           respCorrecta = true;
           pos = 0;
         }
       }
-
-      /*
-      //  Esto cuando se recibe un SMS, no creo que sea necesario
-      pos=ristra.indexOf("+CMT");   // SMS Received
-      if (pos >= 0) {
-        flagSMS=1;                  // Flag Activated
-      }
-      */
-    //}
     }
   }
   if(imprime){
@@ -137,20 +130,9 @@ void updateSerial(unsigned long howLongToWait, bool imprime){
   while ((Serial2.available()))  {
     char character = Serial2.read();
       if(imprime){
-        //Serial.write(character);// Send all data to Serial Port.
         Serial.print(character);
-        //Serial.print("~");
       }
       ristra.concat(character);
-
-      /*
-      //  Esto cuando se recibe un SMS, no creo que sea necesario
-      pos=ristra.indexOf("+CMT");   // SMS Received
-      if (pos >= 0) {
-        flagSMS=1;                  // Flag Activated
-      }
-      */
-    //}
   }
   if(imprime) Serial.print("<<-\n");
 } // end updateSerial
@@ -163,6 +145,7 @@ void updateSerial(unsigned long howLongToWait, bool imprime){
         \___|_| |_|\_/ |_|\__,_| |  | |
                                 \_\/_/ 
  ****************************************************************************/
+//  Envia comando AT y espera por respuesta del módulo
 bool envia(String at, String &retorno, String okResp, String errorStr, uint32_t timeOut, bool imprime){
         
   if(timeOut == 0) timeOut = 3600000;
@@ -214,9 +197,6 @@ bool envia(String at, String &retorno, String okResp, String errorStr, uint32_t 
  ****************************************************************************/
 //  Demora segundos enteros
 void miDelay(uint8_t segs){
-  //Serial.print("Espera ");
-  //Serial.print(segs);
-  //Serial.println(" segs.");
   for(int i = 0; i < segs; i++){
     uint32_t lap = millis() + 1000;
     while(1){
