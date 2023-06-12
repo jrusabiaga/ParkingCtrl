@@ -235,8 +235,7 @@ void loop() {
         Serial.println("");
 
         //  Se envían los SMS
-        //for(int i = 0; i < numCli; i++){
-        for(int i = 0; i < 1; i++){
+        for(int i = 0; i < numCli; i++){
           //  Se ensambla el mensaje saliente
           SMS = "Hola  ";
           SMS += registros[i].nombre;
