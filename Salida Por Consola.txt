@@ -1,0 +1,529 @@
+ParkingCtrl.ino
+----------------------------------------------------------------------
+Sistema utiliza un sensor láser ToF para detectar el estado de ocupación de una plaza
+cada minuto, activando un módulo A7670E que envía un SMS al número preestablecido antes
+de ser desactivado hasta el próximo cambio.
+
+
+
+Verificando: Distancia = 173 cm. La plaza está LIBRE
+La plaza ahora esta LIBRE
+Verificando: Distancia = 173 cm. La plaza ahora esta LIBRE
+Módulo A7670E activado
+
+Intentando comunicar con el módulo A7670E...
+
++CPIN: READY
+
+*ATREADY: 1
+
+SMS DONE
+
+PB DONE
+
+Comunicación establecida con el módulo A7670E
+
+2 min. de espera por la señal de la red de telefonía móvil...
+
+Módulo A7670E conectado a la red
+
+
+
+Configuración inicial...
+----------------------------------------------------------------------
+
+Restaura configuración guardada del A7670E
+ATZ0
+OK
+ATI
+Manufacturer: INCORPORATED
+Model: A7670E-LASE
+Revision: A7670M7_V1.11.1
+IMEI: 862205057937775
++GCAP: +CGSM,+FCLASS,+DS
+
+OK
+
+Imprimir fecha y hora desde la memoria
+AT+CCLK?
++CCLK: "23/06/12,10:24:22+08"
+
+OK
+
+Activar actualización automática de hora y fecha
+AT+CTZU=1
+OK
+
+Identificar la Operadora de telefonía
+AT+COPS=3,1
+OK
+AT+COPS?
++COPS: 0,1,"vodafone ES",7
+
+OK
+Operador = vodafone ES  Red = 4G
+
+Intensidad de la señal
+AT+CSQ
++CSQ: 16,99
+
+OK
+
+Numero de serie de la SIM
+AT+CICCID
++ICCID: 8934569852201922811
+
+OK
+
+Notificación de cambio en el estado de la conexión
+AT+CREG=2
+OK
+
+Configurar GSM set de caracteres
+AT+CSCS="IRA"
+OK
+
+Configurar el formato de los SMSs a formato de texto
+AT+CMGF=1
+OK
+
+Configura SMSs no se guarden en memoria y
+reporte cuando lleguen
+AT+CNMI=1
+OK
+
+Actualiza RTC del ESP32
+AT+CCLK?
++CCLK: "23/06/12,10:24:25+08"
+
+OK
+12/6/2023
+
+Guardo configuración del módulo A7670E
+AT&W0
+OK
+***********************  COMIENZA  ***********************
+Envía SMS: 647475070 a Juan
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Juan
+Plaza LIBRE
+June 12 10:24:25
+
++CMGS: 168
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Maria
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Maria
+Plaza LIBRE
+June 12 10:24:34
+
++CMGS: 169
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Pedro
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Pedro
+Plaza LIBRE
+June 12 10:24:44
+
++CMGS: 170
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Laura
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Laura
+Plaza LIBRE
+June 12 10:24:54
+
++CMGS: 171
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Lucas
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Lucas
+Plaza LIBRE
+June 12 10:25:04
+
++CMGS: 172
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Ana
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Ana
+         Plaza LIBRE
+June 12 10:25:14
+
++CMGS: 173
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Luis
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Luis
+Plaza LIBRE
+June 12 10:25:24
+
++CMGS: 174
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Sofia
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Sofia
+Plaza LIBRE
+June 12 10:25:34
+
++CMGS: 175
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Diego
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Diego
+Plaza LIBRE
+June 12 10:25:43
+
++CMGS: 176
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Valeria
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Valeria
+Plaza LIBRE
+June 12 10:25:53
+
++CMGS: 177
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+***********************  TERMINA  ***********************
+Módulo A7670E desactivado
+Verificando: Distancia = 173 cm. La plaza sigue LIBRE
+Verificando: Distancia = 172 cm. La plaza sigue LIBRE
+Verificando: Distancia = 173 cm. La plaza sigue LIBRE
+Verificando: Distancia = 172 cm. La plaza sigue LIBRE
+Verificando: Distancia = 173 cm. La plaza sigue LIBRE
+Verificando: Distancia = 173 cm. La plaza sigue LIBRE
+Verificando: Distancia = 173 cm. La plaza sigue LIBRE
+Verificando: Distancia = 30 cm. La plaza ahora se OCUPÓ
+Verificando: Distancia = 30 cm. La plaza ahora se OCUPÓ
+Módulo A7670E activado
+
+Intentando comunicar con el módulo A7670E...
+▒DDdDFf▒ffffvvgvwwww▒▒▒▒▒
++CPIN: READY
+
+*ATREADY: 1
+
+SMS DONE
+
++CGEV: EPS PDN ACT 1
+
+PB DONE
+
+Comunicación establecida con el módulo A7670E
+
+2 min. de espera por la señal de la red de telefonía móvil...
+
+Módulo A7670E conectado a la red
+
+
+
+Configuración inicial...
+----------------------------------------------------------------------
+
+Restaura configuración guardada del A7670E
+ATZ0
+OK
+ATI
+Manufacturer: INCORPORATED
+Model: A7670E-LASE
+Revision: A7670M7_V1.11.1
+IMEI: 862205057937775
++GCAP: +CGSM,+FCLASS,+DS
+
+OK
+
+Imprimir fecha y hora desde la memoria
+AT+CCLK?
++CCLK: "23/06/12,10:34:26+08"
+
+OK
+
+Activar actualización automática de hora y fecha
+AT+CTZU=1
+OK
+
+Identificar la Operadora de telefonía
+AT+COPS=3,1
+OK
+AT+COPS?
++COPS: 0,1,"vodafone ES",7
+
+OK
+Operador = vodafone ES  Red = 4G
+
+Intensidad de la señal
+AT+CSQ
++CSQ: 16,99
+
+OK
+
+Numero de serie de la SIM
+AT+CICCID
++ICCID: 8934569852201922811
+
+OK
+
+Notificación de cambio en el estado de la conexión
+AT+CREG=2
+OK
+
+Configurar GSM set de caracteres
+AT+CSCS="IRA"
+OK
+
+Configurar el formato de los SMSs a formato de texto
+AT+CMGF=1
+OK
+
+Configura SMSs no se guarden en memoria y
+reporte cuando lleguen
+AT+CNMI=1
+OK
+
+Actualiza RTC del ESP32
+AT+CCLK?
++CCLK: "23/06/12,10:34:29+08"
+
+OK
+12/6/2023
+
+Guardo configuración del módulo A7670E
+AT&W0
+OK
+***********************  COMIENZA  ***********************
+Envía SMS: 647475070 a Juan
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Juan
+Plaza OCUPADA
+June 12 10:34:29
+
++CMGS: 178
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Maria
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Maria
+Plaza OCUPADA
+June 12 10:34:38
+
++CMGS: 179
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Pedro
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Pedro
+Plaza OCUPADA
+June 12 10:34:48
+
++CMGS: 180
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Laura
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Laura
+Plaza OCUPADA
+June 12 10:34:58
+
++CMGS: 181
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Lucas
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Lucas
+Plaza OCUPADA
+June 12 10:35:08
+
++CMGS: 182
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Ana
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Ana
+Plaza OCUPADA
+June 12 10:35:18
+
++CMGS: 183
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Luis
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Luis
+Plaza OCUPADA
+June 12 10:35:28
+
++CMGS: 184
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Sofia
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Sofia
+Plaza OCUPADA
+June 12 10:35:38
+
++CMGS: 185
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Diego
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Diego
+Plaza OCUPADA
+June 12 10:35:47
+
++CMGS: 186
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+Envía SMS: 647475070 a Valeria
+¡enviado!
+Respuesta del A7670E --------------------------------------------------------
+AT+CMGS="647475070"
+>
+Hola  Valeria
+Plaza OCUPADA
+June 12 10:35:57
+
++CMGS: 187
+
+OK
+
+FIN -------------------------------------------------------------------------
+
+***********************  TERMINA  ***********************
+Módulo A7670E desactivado
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA
+Verificando: Distancia = 30 cm. La plaza sigue OCUPADA

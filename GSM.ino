@@ -17,6 +17,8 @@ void beginGSM(){
   bool once = true;           //  Primera vez
   bool conexion = false;      //  Si existe conexión con la red de telefonía
 
+  uint8_t arranques = 0;
+
   //  Se asume que la velocidad por defecto es 115200 bps
   //  Cuando el módulo A7670E termina el arranque lo notifica con el message
   //  "PB DONE" así que: se espera eso
@@ -26,8 +28,8 @@ void beginGSM(){
   //miDelay(20);
   uint32_t lap = millis();
 
-  //  Espera "PB DONE" en un máximo de 40 segundos
-  while(millis() < lap + 40000){
+  //  Espera "PB DONE" en un máximo de 2,5 minutos
+  while(millis() < lap + 150000){
     while(Serial2.available()) {                //  Respuesta del Modem
       char letra = Serial2.read();              //  Lo pilla letra a letra
       if(armaFrase(letra, resp)){               //  Ensambla la frase
@@ -35,9 +37,20 @@ void beginGSM(){
         Serial.println("");
         if(resp.indexOf("PB DONE") >= 0){
           arranco = true;
+          /*
+          Serial.print("Final PB DONE --- arranques = ");
+          Serial.print(arranques);
+          Serial.print(" en: ");
+          Serial.println((millis() - lap) / 1000.00);
+          Serial.println("Quieto paro");
+          for(;;);
+          */
           break;
-        }else if(resp.indexOf("READY") >= 0){
+        }else if(resp.indexOf("*ATREADY:") >= 0){
+          //  El módulo responde con "*ATREADY:" solo cuando arranca
+          arranques ++;
           enFrio = true;
+          //Serial.println("Arranque en frio");
           break;
         }else if(resp.indexOf("SIM REMOVED") >= 0){
           arranco = true;
@@ -73,6 +86,11 @@ void beginGSM(){
     Serial.println("     **** ERROR FATAL ****");
     Serial.println("No se encontró el Módulo A7670E");
     Serial.println("Ejecución terminada");
+    Serial.print("No respondio con \"PB DONE\" --- arranques = ");
+    Serial.print(arranques);
+    Serial.print(" en: ");
+    Serial.print((millis() - lap) / 1000.00);
+    Serial.println(" segundos");
     digitalWrite(MOSFET, LOW);
     for(;;){
       errorLED(1);

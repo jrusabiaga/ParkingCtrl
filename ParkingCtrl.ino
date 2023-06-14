@@ -175,9 +175,10 @@ void setup() {
   //  Sketch ID on the terminal
   Serial.println(F(FILE_NAME));
   for(int i = 0; i < 70; i++) Serial.print("-"); Serial.println("");
-  Serial.println(F("Sistema utiliza un sensor láser ToF para detectar el estado de ocupación de una plaza"));
-  Serial.println(F("cada minuto, activando un módulo A7670E que envía un SMS al número preestablecido antes"));
-  Serial.println(F("de ser desactivado hasta el próximo cambio."));
+  Serial.println(F("Sistema utiliza un sensor láser ToF para detectar el estado de"));
+  Serial.println(F("ocupación de una plaza cada minuto, activando un módulo A7670E"));
+  Serial.println(F("que envía un SMS a cada cliente de la lista. El módulo es"));
+  Serial.println(F("desactivado hasta el próximo cambio, para reducir el consumo."));
   Serial.println(F("\n\n"));
 
   //  Inicializa SPIFFS y crear fichero de clientes
