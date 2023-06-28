@@ -172,9 +172,9 @@ bool envia(String at, String &retorno, String okResp, String errorStr, uint32_t 
             }
           }
         }
-        if(imprime){                            //  Si quiere salida a pantalla
+        if(imprime){ // Parámetro donde nos han indicado si se quiere ver la salida a pantalla
           Serial.print(resp);
-          if(SHOW_TIMES){
+          if(SHOW_TIMES){ // Si queremos mostrar el tiempo de respuesta de los comandos AT
             Serial.print("\t\t");
             Serial.print(millis() - lap);
           }
@@ -215,7 +215,7 @@ void miDelay(uint8_t segs){
  ********************************************************************************/
 //  Inicializa el circuito RTC del ESP32 
 void setRTC(String &lectura){
-  //  Toma la hora reportada por el GSM modem y la introduce en el RTC del ESP32    
+  //Utiliza la fecha-hora reportada por el módulo GORS y la introduce en el reloj del ESP32    
   int ano = (lectura.substring(8, 10).toInt() + 2000) ;
   int mes = lectura.substring(11, 13).toInt();
   int dia = lectura.substring(14, 16).toInt();

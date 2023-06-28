@@ -12,15 +12,18 @@ void sendSMS(String nombre, String numero, String SMS){
 
   bool salio = false;
 
-  //  Si se pierde la cobertura nunca saldrá de este bucle
-  //  Atención para reportar este error con el LED_ERR y estado SIN_COBERTURA
+  //Aquí podríamos hacer una comprobación de cobertura en el momento del envío del SMS, 
+  //Pero es redundante ya que esto lo hacemos cada vez que encendemos el módulo
+/*  
   while(cobertura() != 1){
+    //Todo lo que no sea "1" es que no tenemos cobertura, luego hacemos un reseteo a ver si espabila
     resetModule();
-    uint32_t lapso = millis();
     
-    // Atención a la próxima linea, creo que no hace falta
-    afterReset(lapso);
+    // La próxima linea no hace falta, es solo una comprobación doble (módulo activo + módulo registrado en red)
+    uint32_t lapso = millis();
+    //afterReset(lapso);
   }
+*/
 
   while(!salio){
     uint32_t tiempo = 0;
@@ -39,8 +42,8 @@ void sendSMS(String nombre, String numero, String SMS){
       Serial2.print("AT+CMGS=\"" + numero + "\"\r");
       sigue = !updateSerial3(800, ">", false);
 
-      //  Si el módulo no responde y se queda en un loop infinito
-      //  Se reinicia y configura
+      //Si el módulo no responde y se queda en un loop infinito
+      //Se reinicia y configura
       if(sigue){
         Serial.println("\nNo responde RESET del módulo");
         //  Se apaga el módulo A7670E
@@ -48,18 +51,19 @@ void sendSMS(String nombre, String numero, String SMS){
         digitalWrite(MOSFET, LOW);
         miDelay(4);
 
-        //  Se reinicia y configura el módulo nuevamente
-        //  El Modem GSM puede tardar mas de 25 segundos en arrancar
-        beginGSM();               //  Enciende el módulo A7670E y espera por el
-        initGSM();                //  Configuración inicial del módulo      
+        //Se reinicia y configura el módulo nuevamente, puede tardar mas de 25 segundos en arrancar
+        beginGSM();//Enciende el módulo y espera por el
+        initGSM();//Configuración inicial del módulo      
       }
       miDelay(1);
     }
 
+    /*
+      //CHECKOINT: Si llego a este punto ya he obtenido el símbolo ">" y puedo escribir el texto
+    */ 
     //Serial.print("\nCuerpo del Mensaje ");
     //Serial.println(Serial2.print(SMS));
-    Serial2.print(SMS);
-    //Serial2.print(SMS);         //  Se envía el texto del mensaje
+    Serial2.print(SMS);//Se envía el texto del mensaje
     updateSerial(800, false);
     //Serial.print("\nFin de Mensaje ");
     //Serial.println(Serial2.print((char)26));
@@ -68,16 +72,17 @@ void sendSMS(String nombre, String numero, String SMS){
 
 
     miDelay(5);
-    //  Verificar que no pase mas de 40 seg. 
+    //Aquí es donde el módulo responde sobre cómo ha ido el envío del SMS. 
+    //Le damos 40 segundos máximo para ello. Si los sobrepasa, reseteamos el módulo
     salio = updateSerial2(40000 - (millis() - tiempo), false);
 
-    //  Impresión de lo que se a recibido del módulo A7670E
+    //  Imprimimos la respuesta del módulo
     Serial.println("Respuesta del A7670E --------------------------------------------------------");
     Serial.println(ristra);
     Serial.println("FIN -------------------------------------------------------------------------");
     Serial.println("");
 
-    //  Si el comando de envío y no responde algo pasa en el módulo
+    //  Si el comando de envío y no responde (en menos de 40 segundos) algo pasa en el módulo
     if(!salio){
       Serial.println("\nNo responde RESET del módulo");
       //  Se apaga el módulo A7670E
